@@ -1,17 +1,24 @@
 # Barter Click Fix (NG)
 
-An SKSE plugin that fixes the annoying "triple buy" or "double buy" bug in the Barter menu.
+An SKSE plugin that fixes the frustrating inventory duplication and "double buy" bugs in the Barter menu, often caused by heavily modded setups, asynchronous script lag, or UI desyncs.
 
 ## The Problem
-In Skyrim, sometimes when you click to buy or sell an item in the Barter menu, the game registers multiple clicks in a single frame or in extremely rapid succession. This results in buying 3 items when you only wanted 1, which is especially frustrating with non-stackable items like weapons and armor.
+In Skyrim, especially in modded setups with heavy script load or custom UI overhauls (like SkyUI, TrueHUD, or economy mods), buying an item can sometimes result in receiving 2 or even 3 copies of that item, while only paying for 1 (or paying for multiple unexpectedly). This duplication occurs because background scripts or buggy UI elements force additional items into the player's inventory during or immediately after the legitimate engine transfer.
 
 ## The Solution
-This plugin hooks into the `BarterMenu` input processing and implements a **debounce mechanism**. It ignores any "Accept" or "Purchase" inputs that occur within 150ms of each other. This effectively filters out the duplicate events caused by engine or UI lag while still feeling responsive to natural player clicks.
+This plugin abandons simple UI-level click blocking and implements an **Ultimate Engine-Level Strict Quantity Parity** mechanism. 
+It hooks directly into the core engine functions (`TESObjectREFR::RemoveItem` and `PlayerCharacter::AddObjectToContainer`). When you purchase an item:
+1. It records exactly what item and how many the merchant removed from their inventory.
+2. It monitors the player's inventory in real-time.
+3. It strictly forces the player's incoming items to match the merchant's outgoing items 1-to-1.
+Any asynchronous Papyrus script, synchronous event, or buggy mod that tries to double the item count or silently sneak duplicates into your inventory is instantly blocked and voided.
 
 ## Features
+- **Strict Quantity Parity:** 100% guarantees you only receive what you actually bought.
+- **Call-Stack Isolation:** Flawlessly differentiates between legitimate engine transactions and rogue script additions.
 - Compatible with Skyrim SE (1.5.97), AE (1.6.xxx), and VR.
 - Uses CommonLibSSE-NG for cross-version compatibility.
-- Extremely lightweight.
+- Extremely lightweight with zero performance impact.
 
 ## Requirements
 - [SKSE64](https://skse.silverlock.org/)
@@ -26,18 +33,25 @@ This plugin hooks into the `BarterMenu` input processing and implements a **debo
 
 # Barter Click Fix (NG) (Türkçe)
 
-Takas (Barter) menüsündeki can sıkıcı "üçlü satın alma" veya "ikili satın alma" hatasını düzelten bir SKSE eklentisi.
+Takas (Barter) menüsündeki can sıkıcı eşya kopyalanması, "ikili satın alma" ve "hayalet eşya" hatalarını çözen bir SKSE eklentisi. Genellikle ağır modlanmış oyunlarda, script gecikmelerinde veya arayüz (UI) senkronizasyon kayıplarında ortaya çıkan sorunları tamamen ortadan kaldırır.
 
 ## Sorun
-Skyrim'de, takas menüsünde bir eşya satın almak veya satmak için tıkladığınızda, oyun bazen tek bir karede veya son derece hızlı bir şekilde art arda birden fazla tıklama kaydeder. Bu durum, yalnızca 1 eşya almak isterken 3 eşya almanıza neden olur ve bu özellikle silah veya zırh gibi üst üste istiflenemeyen (non-stackable) eşyalarda oldukça sinir bozucudur.
+Özellikle çok fazla script içeren veya arayüz modları (SkyUI, TrueHUD, ekonomi modları vs.) kullanan Skyrim kurulumlarında, tüccardan 1 eşya aldığınızda envanterinize 2 veya 3 tane aynı eşyadan gelebilir. Bu kopyalama hatası, oyun motoru eşyayı size verirken, arka planda çalışan hatalı scriptlerin veya UI modlarının aynı eşyayı gizlice cebinize bir kez daha sokmaya çalışmasından kaynaklanır.
 
 ## Çözüm
-Bu eklenti, `BarterMenu` giriş işlemine kanca (hook) atar ve bir **gecikme (debounce) mekanizması** uygular. Birbirinden 150ms daha kısa süre içinde gerçekleşen tüm "Kabul Et" veya "Satın Al" girişlerini yok sayar. Bu sayede, oyuncunun doğal tıklamalarına duyarlı kalırken, oyun motoru veya arayüz gecikmesinden kaynaklanan yinelenen tıklama olaylarını etkili bir şekilde filtreler.
+Bu eklenti, basit arayüz tıklama engellemelerini bir kenara bırakarak **Motor Seviyesinde Katı Miktar Eşitliği (Strict Quantity Parity)** mekanizmasını kullanır.
+Oyun motorunun en derin fonksiyonlarına (`TESObjectREFR::RemoveItem` ve `PlayerCharacter::AddObjectToContainer`) kanca (hook) atar. Bir eşya satın aldığınızda:
+1. Tüccarın (satıcının) envanterinden tam olarak hangi eşyanın kaç adet çıktığını kaydeder.
+2. Oyuncunun envanterini eşzamanlı olarak izler.
+3. Oyuncuya giren eşya miktarını, tüccardan çıkan eşya miktarına 1'e 1 oranında zorla eşitler.
+Eşya miktarını ikiye katlamaya çalışan veya gizlice fazladan kopya eklemeye kalkan tüm asenkron Papyrus scriptleri, senkronize olaylar veya hatalı modlar anında tespit edilir ve engellenir.
 
 ## Özellikler
+- **Katı Miktar Eşitliği (Strict Quantity Parity):** Yalnızca parasını verdiğiniz eşyayı almanızı %100 garanti eder.
+- **Çağrı Yığını İzolasyonu (Call-Stack Isolation):** Oyun motorunun yasal transferleri ile bozuk scriptlerin eklemelerini kusursuzca ayırt eder.
 - Skyrim SE (1.5.97), AE (1.6.xxx) ve VR ile uyumludur.
 - Sürümler arası uyumluluk için CommonLibSSE-NG kullanır.
-- Son derece hafiftir.
+- Son derece hafiftir ve performansa sıfır etkisi vardır.
 
 ## Gereksinimler
 - [SKSE64](https://skse.silverlock.org/)
